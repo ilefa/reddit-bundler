@@ -1,0 +1,10 @@
+# Directories
+test/
+dist/
+.vscode/
+node_modules/
+
+# Test Files
+*.test.ts
+.env
+UConnDorms*.json

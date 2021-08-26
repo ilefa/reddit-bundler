@@ -1,0 +1,20 @@
+{
+  "name": "reddit-bundler",
+  "version": "1.0.0",
+  "description": "Bundles all posts from a Subreddit into a JSON file",
+  "main": "index.ts",
+  "scripts": {
+    "generate-dorms": "ts-node index && ts-node cobalt/parse"
+  },
+  "author": "ILEFA Labs",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "dotenv": "^10.0.0",
+    "progress": "^2.0.3",
+    "snoowrap": "^1.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^16.7.1"
+  }
+}
