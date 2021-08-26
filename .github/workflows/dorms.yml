@@ -39,7 +39,7 @@ jobs:
       env:
         FILE: ./UConnDorms.json
         S3_REGION: 'us-east-1'
-        S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+        S3_BUCKET: ${{ secrets.S3_BUCKET }}
         S3_KEY: UConnDorms.json
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
