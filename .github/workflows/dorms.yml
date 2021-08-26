@@ -19,7 +19,10 @@ jobs:
     - uses: actions/setup-node@v2
       with:
         node-version: '14'
-    - run: npm install
+    - name: Install ts-node
+      run: npm i -g ts-node
+    - name: Install dependencies
+      run: npm install
     - name: Retrieve & Parse Data
       run: npm run generate-dorms
       env:
