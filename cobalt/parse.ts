@@ -119,7 +119,7 @@ import {
         assets = assets
             .filter((asset, i, self) => self
                 .map(asset => asset.url)
-                .indexOf(asset.url) === i));
+                .indexOf(asset.url) === i);
 
         return assets;
     }
