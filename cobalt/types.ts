@@ -42,6 +42,7 @@ export type Dorm = {
 
 export type DormAsset = {
     url: string;
+    caption: string;
     thumbnail: string;
     width: number;
     height: number;

@@ -17,7 +17,11 @@ import {
     // Strip all unnecessary data from the submission
     let start = Date.now();
     let filtered: StrippedSubmission[] = dorms
-        .filter(dorm => !!dorm.is_gallery || !!dorm.is_video)
+        .filter(dorm => dorm.is_gallery
+                     || dorm.is_video
+                     || dorm.is_reddit_media_domain
+                     || dorm.media.oembed
+                     || dorm.media.secure_media.oembed)
         .map(dorm => ({
             selftext: dorm.selftext,
             title: dorm.title,
@@ -58,6 +62,7 @@ import {
         if (submission.media && 'reddit_video' in submission.media)
             assets.push({
                 url: submission.media.reddit_video.fallback_url,
+                caption: submission.title,
                 thumbnail: submission.preview.images[0].source.url,
                 width: submission.preview.images[0].source.width,
                 height: submission.preview.images[0].source.height,
@@ -68,6 +73,7 @@ import {
         if (submission.preview && submission.preview.images)
             assets.push(...submission.preview.images.map(image => ({
                 url: image.source.url,
+                caption: submission.title,
                 thumbnail: image.source.url,
                 width: image.source.width,
                 height: image.source.height,
@@ -81,11 +87,39 @@ import {
                 .map(key => submission.media_metadata[key])
                 .map(data => ({
                     url: data.s.u,
+                    caption: submission.title,
                     thumbnail: data.s.u,
                     width: data.s.x,
                     height: data.s.y,
                     author: submission.author_fullname
                 })));
+
+        // oembed (imgur or other attached)
+        if (submission.media && submission.media.oembed)
+            assets.push({
+                url: (submission.media.oembed as any).url,
+                caption: submission.title,
+                thumbnail: submission.media.oembed.thumbnail_url,
+                width: submission.media.oembed.thumbnail_width,
+                height: submission.media.oembed.thumbnail_height,
+                author: submission.author_fullname
+            });
+
+        if (submission.media.oembed && submission.secure_media.oembed)
+            assets.push({
+                url: (submission.media.oembed as any).url,
+                caption: submission.title,
+                thumbnail: submission.media.oembed.thumbnail_url,
+                width: submission.media.oembed.thumbnail_width,
+                height: submission.media.oembed.thumbnail_height,
+                author: submission.author_fullname
+            });
+
+        // get distinct assets
+        assets = assets
+            .filter((asset, i, self) => self
+                .map(asset => asset.url)
+                .indexOf(asset.url) === i));
 
         return assets;
     }
