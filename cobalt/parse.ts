@@ -1,4 +1,5 @@
 import axios from 'axios';
+import dotenv from 'dotenv';
 import dorms from '../UConnDorms-raw.json';
 
 import { writeFileSync } from 'fs';
@@ -13,6 +14,8 @@ import {
     StrippedSubmission
 } from './types';
 
+dotenv.config();
+
 (async () => {
     // Strip all unnecessary data from the submission
     let start = Date.now();
@@ -20,8 +23,8 @@ import {
         .filter(dorm => dorm.is_gallery
                      || dorm.is_video
                      || dorm.is_reddit_media_domain
-                     || dorm.media.oembed
-                     || dorm.media.secure_media.oembed)
+                     || dorm.media?.oembed
+                     || dorm.secure_media?.oembed)
         .map(dorm => ({
             selftext: dorm.selftext,
             title: dorm.title,
@@ -55,7 +58,7 @@ import {
         })
         .catch(_ => null);
 
-    const extractAssets = (submission: StrippedSubmission) => {
+    const extractAssets = async (submission: StrippedSubmission) => {
         let assets: DormAsset[] = [];
         
         // Reddit Video
@@ -95,7 +98,7 @@ import {
                 })));
 
         // oembed (imgur or other attached)
-        if (submission.media && submission.media.oembed)
+        if (submission.media && submission.media?.oembed)
             assets.push({
                 url: (submission.media.oembed as any).url,
                 caption: submission.title,
@@ -105,7 +108,7 @@ import {
                 author: submission.author_fullname
             });
 
-        if (submission.media.oembed && submission.secure_media.oembed)
+        if (submission.media?.oembed && submission.secure_media?.oembed)
             assets.push({
                 url: (submission.media.oembed as any).url,
                 caption: submission.title,
@@ -114,9 +117,37 @@ import {
                 height: submission.media.oembed.thumbnail_height,
                 author: submission.author_fullname
             });
+
+        // resolve all imgur albums
+        assets = await Promise.all(
+            assets.map(async asset => {
+                if (!asset.url.includes('imgur.com/a/'))
+                    return asset;
+    
+                let headers = { Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}` }
+                let resolved = await axios
+                    .get(`https://api.imgur.com/3/album/${asset.url.split('/a/')[1]}/images`, { headers })
+                    .then(res => res.data)
+                    .then(({ data }) => data.map(ent => ({
+                        url: ent.link,
+                        caption: asset.caption,
+                        thumbnail: ent.link,
+                        width: ent.width,
+                        height: ent.height,
+                        author: asset.author
+                    })))
+                    .catch(_ => []);
+
+                if (resolved.length <= 1)
+                    return resolved[0];
+
+                return resolved;
+            }));
 
         // get distinct assets
         assets = assets
+            .flat()
+            .filter(asset => !!asset)
             .filter((asset, i, self) => self
                 .map(asset => asset.url)
                 .indexOf(asset.url) === i);
@@ -147,7 +178,7 @@ import {
 
     const coalesce = async (submissions: StrippedSubmission[], hall: keyof typeof DormHallType): Promise<Dorm> => ({
         hall,
-        assets: submissions.map(submission => extractAssets(submission)).flat(),
+        assets: (await Promise.all(submissions.map(async submission => await extractAssets(submission)))).flat(),
         sources: await Promise.all(submissions.map(async submission => await extractAttribution(submission)).flat()),
     });
 
