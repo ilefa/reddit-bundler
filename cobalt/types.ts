@@ -36,8 +36,16 @@ export type ExtractedSubmission = {
 
 export type Dorm = {
     hall: keyof typeof DormHallType;
-    assets: string[];
+    assets: DormAsset[];
     sources: DormAttribution[];
+}
+
+export type DormAsset = {
+    url: string;
+    thumbnail: string;
+    width: number;
+    height: number;
+    author: string;
 }
 
 export type DormAttribution = {

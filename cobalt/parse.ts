@@ -5,6 +5,7 @@ import { writeFileSync } from 'fs';
 
 import {
     Dorm,
+    DormAsset,
     DormAttribution,
     DormHallType,
     ExtractedSubmission,
@@ -46,28 +47,45 @@ import {
             if (!avatar)
                 return null;
 
-            console.log(avatar.split('?')[0])
             return avatar.split('?')[0];
         })
         .catch(_ => null);
 
     const extractAssets = (submission: StrippedSubmission) => {
-        let assets: string[] = [];
+        let assets: DormAsset[] = [];
         
         // Reddit Video
         if (submission.media && 'reddit_video' in submission.media)
-            assets.push(submission.media.reddit_video.fallback_url);
+            assets.push({
+                url: submission.media.reddit_video.fallback_url,
+                thumbnail: submission.preview.images[0].source.url,
+                width: submission.preview.images[0].source.width,
+                height: submission.preview.images[0].source.height,
+                author: submission.author_fullname
+            });
 
         // Reddit Video Thumbnail
         if (submission.preview && submission.preview.images)
-            assets.push(...submission.preview.images.map(image => image.source.url))
+            assets.push(...submission.preview.images.map(image => ({
+                url: image.source.url,
+                thumbnail: image.source.url,
+                width: image.source.width,
+                height: image.source.height,
+                author: submission.author_fullname
+            })))
 
         // media_metadata
         if (submission.media_metadata)
             assets.push(...Object
                 .keys(submission.media_metadata)
                 .map(key => submission.media_metadata[key])
-                .map(data => data.s.u));
+                .map(data => ({
+                    url: data.s.u,
+                    thumbnail: data.s.u,
+                    width: data.s.x,
+                    height: data.s.y,
+                    author: submission.author_fullname
+                })));
 
         return assets;
     }
