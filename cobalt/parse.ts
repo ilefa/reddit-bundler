@@ -236,5 +236,7 @@ dotenv.config();
     final = final.filter(ent => ent.assets.length);
 
     writeFileSync(`${dorms[0].subreddit}.json`, JSON.stringify(final, null, 3));
-    console.log(`Parsed ${filtered.length} records in ${(Date.now() - start).toFixed(2)}ms.`);
+    console.log(` - ${final.reduce((a, b) => a + b.assets.length, 0)} assets processed`);
+    console.log(` - ${filtered.length} records generated`);
+    console.log(`Finished generating records in ${(Date.now() - start).toFixed(2)}ms.`);
 })();
