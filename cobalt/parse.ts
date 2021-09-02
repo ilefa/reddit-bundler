@@ -237,6 +237,7 @@ dotenv.config();
 
     writeFileSync(`${dorms[0].subreddit}.json`, JSON.stringify(final, null, 3));
     console.log(` - ${final.reduce((a, b) => a + b.assets.length, 0)} assets processed`);
+    final.forEach(ent => console.log(`   > ${ent.hall} has ${ent.assets.length} asset${ent.assets.length === 1 ? '' : 's'} from ${ent.sources.length} source${ent.sources.length === 1 ? '' : 's'}`));
     console.log(` - ${filtered.length} records generated`);
     console.log(`Finished generating records in ${(Date.now() - start).toFixed(2)}ms.`);
 })();
